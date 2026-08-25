@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dental Clinic Demo</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#6b7280;--line:#e5e7eb;--accent:#2563eb;--soft:#eff6ff;--danger:#dc2626;--ok:#16a34a}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial;background:var(--bg);color:var(--text)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.brand{font-size:20px;font-weight:800}.brand span{color:var(--accent)}
+.container{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 70px)}
+aside{background:#fff;border-left:1px solid var(--line);padding:18px}
+nav button{display:block;width:100%;border:0;background:none;text-align:right;padding:13px 14px;border-radius:10px;margin:4px 0;font-size:15px;cursor:pointer;color:var(--text)}
+nav button.active,nav button:hover{background:var(--soft);color:var(--accent);font-weight:700}
+main{padding:24px;max-width:1400px;width:100%;margin:auto}
+.page{display:none}.page.active{display:block}
+h1{margin:0 0 6px;font-size:27px}h2{font-size:19px;margin:0 0 16px}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 2px 8px #00000008}
+.stat b{font-size:28px;display:block;margin-top:8px}.stat small{color:var(--muted)}
+.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin:18px 0;flex-wrap:wrap}
+input,select,textarea{border:1px solid var(--line);border-radius:9px;padding:10px 12px;font:inherit;background:#fff}
+input{min-width:220px}button.primary{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer}
+button.secondary{background:#fff;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 16px;cursor:pointer}
+table{width:100%;border-collapse:collapse}th,td{padding:13px 10px;border-bottom:1px solid var(--line);text-align:right}th{color:var(--muted);font-size:13px}
+.badge{padding:4px 8px;border-radius:99px;font-size:12px;background:#ecfdf5;color:#166534}
+.patient-layout{display:grid;grid-template-columns:300px 1fr;gap:16px}.patient-list{max-height:620px;overflow:auto}
+.patient-item{padding:13px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:9px}.patient-item:hover,.patient-item.selected{background:var(--soft)}
+.patient-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:15px;margin-bottom:16px}
+.tabs{display:flex;gap:7px;border-bottom:1px solid var(--line);margin-bottom:18px}.tab{border:0;background:none;padding:10px 14px;cursor:pointer}.tab.active{color:var(--accent);font-weight:700;border-bottom:2px solid var(--accent)}
+.tooth-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-top:15px}.tooth{border:1px solid #cbd5e1;border-radius:10px;background:#fff;padding:10px 5px;text-align:center;cursor:pointer}.tooth:hover{border-color:var(--accent)}.tooth .num{font-size:12px;color:var(--muted)}.tooth .ico{font-size:28px;margin:4px 0}.tooth.bad{background:#fef2f2;border-color:#fecaca}.tooth.good{background:#f0fdf4;border-color:#bbf7d0}.tooth.work{background:#eff6ff;border-color:#bfdbfe}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{background:#fff;border-radius:15px;padding:22px;max-width:620px;width:100%;max-height:90vh;overflow:auto}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgrid label{display:flex;flex-direction:column;gap:6px;font-size:13px}.full{grid-column:1/-1}
+.actions{display:flex;gap:8px;justify-content:flex-start;margin-top:16px}
+@media(max-width:900px){.container{grid-template-columns:1fr}aside{display:none}.grid{grid-template-columns:repeat(2,1fr)}.patient-layout{grid-template-columns:1fr}.tooth-grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="brand">🦷 <span>Dental</span> Clinic Demo</div><div class="muted">نسخة تجريبية — البيانات محفوظة محليًا في هذا المتصفح</div></header>
+<div class="container">
+<aside><nav>
+<button class="active" data-page="dashboard">🏠 الرئيسية</button>
+<button data-page="patients">👥 المرضى</button>
+<button data-page="appointments">📅 المواعيد</button>
+<button data-page="backup">💾 النسخ الاحتياطي</button>
+</nav></aside>
+<main>
+<section id="dashboard" class="page active">
+<h1>لوحة التحكم</h1><div class="muted">نظرة سريعة على العيادة</div>
+<div class="grid">
+<div class="card stat">المرضى <b id="statPatients">0</b><small>إجمالي الملفات</small></div>
+<div class="card stat">مواعيد اليوم <b id="statAppts">0</b><small>مواعيد مسجلة</small></div>
+<div class="card stat">خطط العلاج <b id="statPlans">0</b><small>إجراءات قيد المتابعة</small></div>
+<div class="card stat">المتبقي <b id="statDue">0</b><small>بالعملة المحلية</small></div>
+</div>
+<div class="card"><h2>المواعيد القادمة</h2><table><thead><tr><th>المريض</th><th>التاريخ</th><th>الوقت</th><th>النوع</th></tr></thead><tbody id="dashAppts"></tbody></table></div>
+</section>
+
+<section id="patients" class="page">
+<h1>المرضى</h1><div class="toolbar"><input id="search" placeholder="ابحث بالاسم أو الهاتف أو رقم الملف"><button class="primary" id="addPatient">+ مريض جديد</button></div>
+<div class="patient-layout"><div class="card patient-list" id="patientList"></div><div id="patientDetail"></div></div>
+</section>
+
+<section id="appointments" class="page">
+<h1>المواعيد</h1><div class="toolbar"><button class="primary" id="addAppt">+ موعد جديد</button></div>
+<div class="card"><table><thead><tr><th>المريض</th><th>التاريخ</th><th>الوقت</th><th>الإجراء</th><th>الحالة</th></tr></thead><tbody id="apptTable"></tbody></table></div>
+</section>
+
+<section id="backup" class="page">
+<h1>النسخ الاحتياطي</h1><div class="muted">في النسخة التجريبية يمكنك تصدير واستيراد البيانات. في النسخة الحقيقية سننقل التخزين إلى قاعدة بيانات سحابية مع نسخ احتياطية تلقائية.</div>
+<div class="card" style="margin-top:20px"><h2>تصدير</h2><p class="muted">ينشئ ملف JSON يحتوي على بيانات التجربة الحالية.</p><button class="primary" id="exportBtn">تصدير نسخة احتياطية</button></div>
+<div class="card" style="margin-top:16px"><h2>استيراد</h2><p class="muted">استورد ملف JSON تم تصديره من هذا النظام.</p><input type="file" id="importFile" accept=".json"></div>
+</section>
+</main></div>
+
+<div class="modal" id="patientModal"><div class="modal-box"><h2>إضافة مريض</h2><form id="patientForm"><div class="formgrid">
+<label>الاسم<input name="name" required></label><label>الهاتف<input name="phone"></label>
+<label>تاريخ الميلاد<input name="dob" type="date"></label><label>الجنس<select name="sex"><option>ذكر</option><option>أنثى</option></select></label>
+<label class="full">الحساسية / التاريخ المرضي<textarea name="history" rows="3"></textarea></label>
+</div><div class="actions"><button class="primary">حفظ</button><button type="button" class="secondary close">إلغاء</button></div></form></div></div>
+
+<div class="modal" id="apptModal"><div class="modal-box"><h2>إضافة موعد</h2><form id="apptForm"><div class="formgrid">
+<label>المريض<select name="patient" id="apptPatient"></select></label><label>التاريخ<input name="date" type="date" required></label>
+<label>الوقت<input name="time" type="time" required></label><label>الإجراء<input name="type" placeholder="فحص / حشوة / تنظيف"></label>
+</div><div class="actions"><button class="primary">حفظ</button><button type="button" class="secondary close">إلغاء</button></div></form></div></div>
+
+<script>
+const seed={patients:[
+{id:"P-1001",name:"أحمد محمد",phone:"0790000000",dob:"1998-04-12",sex:"ذكر",history:"حساسية من البنسلين",teeth:{16:"حشوة",26:"علاج عصب",36:"تسوس"}},
+{id:"P-1002",name:"سارة خالد",phone:"0781111111",dob:"2001-09-03",sex:"أنثى",history:"لا يوجد",teeth:{11:"سليم",21:"تاج"}}
+],appointments:[
+{patient:"P-1001",date:new Date().toISOString().slice(0,10),time:"17:00",type:"فحص دوري",status:"مؤكد"},
+{patient:"P-1002",date:new Date(Date.now()+86400000).toISOString().slice(0,10),time:"18:30",type:"تنظيف",status:"مؤكد"}],plans:3,due:125}
+};
+let data=JSON.parse(localStorage.getItem("dentalDemo")||"null")||seed;
+let selected=data.patients[0]?.id;
+function save(){localStorage.setItem("dentalDemo",JSON.stringify(data));render()}
+function render(){
+document.getElementById("statPatients").textContent=data.patients.length;
+document.getElementById("statAppts").textContent=data.appointments.filter(a=>a.date===new Date().toISOString().slice(0,10)).length;
+document.getElementById("statPlans").textContent=data.plans;document.getElementById("statDue").textContent=data.due;
+const name=id=>data.patients.find(p=>p.id===id)?.name||"—";
+document.getElementById("dashAppts").innerHTML=data.appointments.slice(0,6).map(a=>`<tr><td>${name(a.patient)}</td><td>${a.date}</td><td>${a.time}</td><td>${a.type}</td></tr>`).join("");
+const q=(document.getElementById("search")?.value||"").toLowerCase();
+const ps=data.patients.filter(p=>(p.name+p.phone+p.id).toLowerCase().includes(q));
+document.getElementById("patientList").innerHTML=ps.map(p=>`<div class="patient-item ${p.id===selected?"selected":""}" onclick="selectPatient('${p.id}')"><b>${p.name}</b><br><small>${p.id} · ${p.phone||"بدون هاتف"}</small></div>`).join("");
+renderPatient();renderAppts();
+}
+function selectPatient(id){selected=id;render()}
+function renderPatient(){
+const p=data.patients.find(x=>x.id===selected);const el=document.getElementById("patientDetail");
+if(!p){el.innerHTML='<div class="card">اختر مريضًا</div>';return}
+const teeth=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+el.innerHTML=`<div class="card"><div class="patient-head"><div><h2>${p.name}</h2><span class="muted">${p.id} · ${p.phone||"—"} · ${p.sex}</span></div><span class="badge">ملف نشط</span></div>
+<div class="tabs"><button class="tab active">الأسنان</button><button class="tab">الزيارات</button><button class="tab">الخطة العلاجية</button></div>
+<p><b>التاريخ المرضي:</b> ${p.history||"لا يوجد"}</p><h2 style="margin-top:22px">Dental Chart</h2>
+<div class="tooth-grid">${teeth.map(n=>{let s=p.teeth?.[n]||"غير مسجل";let c=s==="سليم"?"good":s==="غير مسجل"?"":"bad";return `<div class="tooth ${c}" onclick="setTooth(${n})"><div class="num">${n}</div><div class="ico">🦷</div><small>${s}</small></div>`}).join("")}</div></div>`;
+}
+function setTooth(n){const p=data.patients.find(x=>x.id===selected);const v=prompt(`حالة السن ${n}:`,p.teeth?.[n]||"سليم");if(v!==null){p.teeth=p.teeth||{};p.teeth[n]=v;save()}}
+function renderAppts(){const name=id=>data.patients.find(p=>p.id===id)?.name||"—";document.getElementById("apptTable").innerHTML=data.appointments.map((a,i)=>`<tr><td>${name(a.patient)}</td><td>${a.date}</td><td>${a.time}</td><td>${a.type}</td><td><span class="badge">${a.status}</span></td></tr>`).join("")}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(b.dataset.page).classList.add("active")});
+document.getElementById("search").oninput=render;
+const pm=document.getElementById("patientModal"),am=document.getElementById("apptModal");
+document.getElementById("addPatient").onclick=()=>pm.classList.add("open");
+document.getElementById("addAppt").onclick=()=>{document.getElementById("apptPatient").innerHTML=data.patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");am.classList.add("open")};
+document.querySelectorAll(".close").forEach(x=>x.onclick=()=>x.closest(".modal").classList.remove("open"));
+document.getElementById("patientForm").onsubmit=e=>{e.preventDefault();let f=new FormData(e.target);data.patients.push({id:"P-"+(1001+data.patients.length),name:f.get("name"),phone:f.get("phone"),dob:f.get("dob"),sex:f.get("sex"),history:f.get("history"),teeth:{}});selected=data.patients.at(-1).id;e.target.reset();pm.classList.remove("open");save()};
+document.getElementById("apptForm").onsubmit=e=>{e.preventDefault();let f=new FormData(e.target);data.appointments.push({patient:f.get("patient"),date:f.get("date"),time:f.get("time"),type:f.get("type"),status:"مؤكد"});e.target.reset();am.classList.remove("open");save()};
+document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="dental-clinic-backup.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importFile").onchange=e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);selected=data.patients[0]?.id;save();alert("تم الاستيراد بنجاح")}catch{alert("ملف غير صالح")}};r.readAsText(file)};
+render();
+</script>
+</body></html>
